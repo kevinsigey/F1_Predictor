@@ -25,9 +25,6 @@ on:
 
 permissions:
   contents: read
-  # To push the image to GHCR as the repo's own actor, using GITHUB_TOKEN. A
-  # personal access token would be a credential that outlives the repo and has
-  # to be rotated by hand.
   packages: write
 
 jobs:
@@ -42,7 +39,13 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          # GHCR_PAT, not GITHUB_TOKEN: the f1-predictor package predates this
+          # workflow (created by deploy-azure.yml's PAT pushes) and is not
+          # linked to this repo, so a GITHUB_TOKEN push is denied with
+          # write_package (first run of this workflow, 2026-11-01). Link the
+          # package to the repo in its GHCR settings and this can switch to
+          # secrets.GITHUB_TOKEN like the other predictors.
+          password: ${{ secrets.GHCR_PAT }}
 
       - name: Build and push image
         run: |
