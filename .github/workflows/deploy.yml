@@ -1,0 +1,77 @@
+name: Deploy F1 Predictor
+
+on:
+# A merge to main deploys. The paths filter is the whole reason this is safe to
+# run automatically: it lists what goes INTO the image (see the Dockerfile),
+# and the refresh jobs' output is deliberately absent. data/public_snapshot.json
+# is polled from raw.githubusercontent.com at runtime, so a new snapshot never
+# needs a new image; data/tracking.db is handled the other way -- it has no
+# polling path, so refresh-public-snapshot.yml dispatches this workflow itself
+# whenever a refresh commit changes the database.
+#
+# The filter is a whitelist, so an exclusion cannot be expressed in it: add
+# `data/**` and every refresh becomes a deploy.
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'frontend/**'
+      - 'models/**'
+      - 'data/cache/jolpica/**'
+      - 'Dockerfile'
+      - 'pyproject.toml'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  # To push the image to GHCR as the repo's own actor, using GITHUB_TOKEN. A
+  # personal access token would be a credential that outlives the repo and has
+  # to be rotated by hand.
+  packages: write
+
+jobs:
+  build:
+    name: Build and push the image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        run: |
+          docker build -t ghcr.io/kevinsigey/f1-predictor:${{ github.sha }} -t ghcr.io/kevinsigey/f1-predictor:latest .
+          docker push ghcr.io/kevinsigey/f1-predictor:${{ github.sha }}
+          docker push ghcr.io/kevinsigey/f1-predictor:latest
+
+  # Pulls the image pushed above on the VPS stack at /opt/stack. `bin/deploy` is
+  # the only thing the CI key can ask for -- a forced command in the deploy
+  # user's authorized_keys -- and it pins the sha in .env, restarts,
+  # health-checks, and rolls back to the previous tag if the new one is unhealthy.
+  vps:
+    name: Deploy to the VPS
+    needs: build
+    if: vars.VPS_HOST != ''
+    runs-on: ubuntu-latest
+    # One deploy at a time per service: two repos pushing at once race on
+    # /opt/stack/.env. bin/deploy takes its own lock too; this keeps the queue
+    # off the box.
+    concurrency: vps-deploy-f1
+    steps:
+      - name: Deploy to VPS
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+          # Written before the first connection, or ssh prompts to confirm the
+          # host key and the job hangs until it times out.
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh deploy@${{ vars.VPS_HOST }} deploy f1 ${{ github.sha }}
