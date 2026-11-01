@@ -2,14 +2,15 @@ name: Refresh public snapshot
 
 # Runs public_snapshot.py on GitHub's own infrastructure and pushes
 # data/public_snapshot.json + data/tracking.db if either changed. The
-# deploy workflow ignores the snapshot path (see deploy-azure.yml's
-# paths-ignore) -- the running container instead picks up the new
+# deploy workflow ignores the snapshot path (see deploy.yml's paths
+# whitelist) -- the running container instead picks up the new
 # public_snapshot.json within PUBLIC_SNAPSHOT_POLL_SECONDS by polling this
 # file's raw GitHub URL (see api/routes.py::refresh_public_snapshot_from_remote),
 # no redeploy needed. tracking.db has no equivalent live-poll path (it's a
-# SQLite file, not a small JSON blob to fetch-and-swap) -- an updated
-# tracking.db only reaches the running deployment on its next deploy, an
-# accepted lag, not a bug. public_snapshot.py itself does the actual
+# SQLite file, not a small JSON blob to fetch-and-swap), so when a refresh
+# commit changes it, the commit step dispatches deploy.yml itself (last step
+# below) and the new database reaches the site inside that deploy's image.
+# public_snapshot.py itself does the actual
 # snapshot-then-reconcile work against tracking.db on every run of this
 # workflow (see its module docstring) -- this step only commits the result.
 
@@ -50,6 +51,8 @@ concurrency:
 
 permissions:
   contents: write
+  # So the commit step can dispatch deploy.yml when tracking.db changes (below).
+  actions: write
 
 jobs:
   refresh:
@@ -108,6 +111,7 @@ jobs:
           key: data-cache-${{ github.run_id }}
 
       - name: Commit and push if changed
+        id: snapshot_commit
         if: steps.gate.outputs.refresh == 'true'
         # Confirmed directly (not theoretical): an overlapping run once
         # produced a real git merge conflict in public_snapshot.json that
@@ -128,6 +132,9 @@ jobs:
           git add data/public_snapshot.json
           git add -f data/tracking.db
           if [ -f data/session_results_seen.json ]; then git add data/session_results_seen.json; fi
+          if git diff --cached --name-only | grep -qx "data/tracking.db"; then
+            echo "db_changed=true" >> "$GITHUB_OUTPUT"
+          fi
           if git diff --cached --quiet; then
             echo "No change, nothing to push."
             exit 0
@@ -143,3 +150,14 @@ jobs:
           done
           echo "Push failed after retry." >&2
           exit 1
+
+      - name: Dispatch a deploy when the track-record database changed
+        if: steps.snapshot_commit.outputs.db_changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # tracking.db has no runtime polling path (unlike the snapshot) -- it only
+          # reaches the site inside a new image. A refresh that reconciled session
+          # results into it therefore asks for a deploy, so the track record keeps
+          # updating itself instead of waiting for the next code merge.
+          gh workflow run deploy.yml --ref main
