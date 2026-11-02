@@ -39,13 +39,12 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          # GHCR_PAT, not GITHUB_TOKEN: the f1-predictor package predates this
-          # workflow (created by deploy-azure.yml's PAT pushes) and is not
-          # linked to this repo, so a GITHUB_TOKEN push is denied with
-          # write_package (first run of this workflow, 2026-11-01). Link the
-          # package to the repo in its GHCR settings and this can switch to
-          # secrets.GITHUB_TOKEN like the other predictors.
-          password: ${{ secrets.GHCR_PAT }}
+          # GITHUB_TOKEN, like the other predictors: the f1-predictor
+          # package was linked to this repo in its GHCR settings on
+          # 2026-11-01, so the repo token's packages:write now covers it
+          # (before the link, a GITHUB_TOKEN push was denied write_package
+          # and this step used the repo's GHCR_PAT secret).
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push image
         run: |
