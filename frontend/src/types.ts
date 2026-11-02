@@ -151,6 +151,19 @@ export interface TrackRecordPick {
   counted: boolean;
 }
 
+/** One round of the record, over its counted picks: the race strip's row.
+ *  `n_pre_session + n_post_session === n` by construction; a round with any
+ *  `n_post_session` is drawn hollow on the strip and says so in its label. */
+export interface TrackRecordRound {
+  season: number;
+  round: number;
+  race_name: string | null;
+  n: number;
+  brier: number;
+  n_pre_session: number;
+  n_post_session: number;
+}
+
 export interface TrackRecordResponse {
   /**
    * The HEADLINE: every counted pick, one per (session, driver, market), the
@@ -182,8 +195,12 @@ export interface TrackRecordResponse {
    * recorded at or after their own start — the disclosure, not the exclusion.
    */
   n_rebuilt_sessions?: number;
-  /** Every recorded pick, counted or not, with its own timestamps and label. */
+  /** Every recorded pick, counted or not, with its own timestamps and label.
+   *  Withheld from the page's first load (`include_picks=false`); the picks
+   *  are fetched from `/track-record/picks` when the ledger is opened. */
   per_pick?: TrackRecordPick[];
+  /** Form over time: one row per round over the counted picks. */
+  by_round?: TrackRecordRound[];
 }
 
 export interface RaceAccuracyEntry {

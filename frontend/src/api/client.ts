@@ -7,6 +7,7 @@ import type {
   RetrainResponse,
   SessionPredictionResponse,
   SessionType,
+  TrackRecordPick,
   TrackRecordResponse,
 } from "../types";
 import { createContextLoader, type Explanation, type Signal } from "../predictor-ui";
@@ -91,12 +92,25 @@ export const api = {
     get<ChampionshipResponse>(
       `/championship/${championship}${season ? `?season=${season}` : ""}`,
     ),
-  trackRecord: (tier?: string, sessionType?: string) => {
+  trackRecord: (tier?: string, sessionType?: string, includePicks = true) => {
+    const params = new URLSearchParams();
+    if (tier) params.set("tier", tier);
+    if (sessionType) params.set("session_type", sessionType);
+    // The per-pick rows are the one part of the payload that grows with the
+    // database; a caller that does not render them withholds them here and
+    // fetches them from trackRecordPicks when it needs them.
+    if (!includePicks) params.set("include_picks", "false");
+    const qs = params.toString();
+    return get<TrackRecordResponse>(qs ? `/track-record?${qs}` : "/track-record");
+  },
+  /** The per-pick disclosure on its own: the same rows `trackRecord`
+   *  carries as `per_pick`, fetched on demand (the record page's ledger). */
+  trackRecordPicks: (tier?: string, sessionType?: string) => {
     const params = new URLSearchParams();
     if (tier) params.set("tier", tier);
     if (sessionType) params.set("session_type", sessionType);
     const qs = params.toString();
-    return get<TrackRecordResponse>(qs ? `/track-record?${qs}` : "/track-record");
+    return get<TrackRecordPick[]>(qs ? `/track-record/picks?${qs}` : "/track-record/picks");
   },
   raceAccuracy: (tier?: string, sessionType?: string) => {
     const params = new URLSearchParams();

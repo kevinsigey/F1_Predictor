@@ -436,6 +436,33 @@ def _per_pick(df: pd.DataFrame, counted: pd.DataFrame) -> list[dict]:
     return sorted(rows, key=lambda r: (r["snapshotted_at"], r["season"], r["round"], r["driver_id"], r["market"]))
 
 
+def _by_round(df: pd.DataFrame) -> list[dict]:
+    """One row per (season, round) over the counted frame: the race strip's data.
+
+    The strip is form over time, so it reads the same counted picks the
+    headline scores -- never the uncounted reruns in `per_pick`. `brier` is
+    the round's mean probability error over those picks; `n_pre_session` /
+    `n_post_session` split the round's counted picks by their own timestamps,
+    so a round whose picks were recorded late can be marked as one rather
+    than quietly averaged in.
+    """
+    rows = []
+    for (season, round_), g in df.groupby(["season", "round"], sort=True):
+        n_pre = int(g["made_before_session"].sum())
+        rows.append(
+            {
+                "season": int(season),
+                "round": int(round_),
+                "race_name": g["race_name"].iloc[0],
+                "n": int(len(g)),
+                "brier": float(((g["predicted_prob"] - g["actual_outcome"]) ** 2).mean()),
+                "n_pre_session": n_pre,
+                "n_post_session": int(len(g)) - n_pre,
+            }
+        )
+    return rows
+
+
 def get_session_track_record(session_type: str | None = None, tier: str | None = None) -> dict:
     """The track record: every recorded pick, and the pre-session subset beside it.
 
@@ -470,6 +497,11 @@ def get_session_track_record(session_type: str | None = None, tier: str | None =
       * `per_pick`, one row per recorded pick carrying `made_before_session`,
         `snapshotted_at` and `session_time`, so disclosure is per pick and
         auditable rather than only in aggregate.
+      * `by_round`, one row per (season, round) over the counted picks --
+        the round's mean probability error and its own pre/post split -- so
+        the record page can draw form over time without shipping `per_pick`
+        to every reader (the page fetches the picks only when its ledger is
+        opened; see the route's `include_picks`).
 
     `n_rebuilt_sessions` is RETAINED and still counts SESSIONS: how many had at
     least one counted pick recorded at or after their own start. It used to mean
@@ -509,6 +541,7 @@ def get_session_track_record(session_type: str | None = None, tier: str | None =
             "n_resolved": 0, "by_market": [], "n_rebuilt_sessions": 0,
             "n_pre_session": 0, "n_post_session_picks": 0,
             "pre_session": {"n_resolved": 0, "by_market": []}, "per_pick": [],
+            "by_round": [],
         }
 
     labelled = _flag_pre_session(df)
@@ -535,6 +568,9 @@ def get_session_track_record(session_type: str | None = None, tier: str | None =
         # pick recorded at or after their own start. Nothing is withheld by it.
         "n_rebuilt_sessions": n_rebuilt_sessions,
         "per_pick": _per_pick(labelled, counted),
+        # Form over time for the record page's race strip: one row per round
+        # over the counted picks, with the round's own late-pick split.
+        "by_round": _by_round(counted),
     }
 
 

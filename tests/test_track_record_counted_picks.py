@@ -500,3 +500,53 @@ def test_the_shipped_headline_covers_every_recorded_pick_and_pre_session_is_a_su
         "no pick is recorded after its session started, so this store no longer "
         "exercises the rule this file exists to protect"
     )
+
+
+# --- by_round: form over time over the same counted picks ----------------------
+
+def test_by_round_splits_each_rounds_counted_picks_by_when_they_were_made():
+    """The race strip's data: one row per round, over the counted picks only,
+    with the round's own late-pick split on the row -- so a round recorded
+    after its session is marked as one instead of averaged in quietly."""
+    _record_and_resolve(1, "2099-01-01T13:00:00+00:00", norris=0.6)
+    _record_and_resolve(2, "2020-01-01T13:00:00+00:00", norris=0.9)
+
+    record = store.get_session_track_record(session_type="race")
+
+    rounds = {(r["season"], r["round"]): r for r in record["by_round"]}
+    assert set(rounds) == {(2026, 1), (2026, 2)}
+    assert rounds[(2026, 1)]["n"] == 8
+    assert rounds[(2026, 1)]["n_pre_session"] == 8
+    assert rounds[(2026, 1)]["n_post_session"] == 0
+    assert rounds[(2026, 2)]["n"] == 8
+    assert rounds[(2026, 2)]["n_pre_session"] == 0
+    assert rounds[(2026, 2)]["n_post_session"] == 8
+    for row in rounds.values():
+        assert row["n"] == row["n_pre_session"] + row["n_post_session"]
+        assert 0.0 <= row["brier"] <= 1.0
+    assert sum(r["n"] for r in rounds.values()) == record["n_resolved"]
+
+
+def test_the_endpoint_can_withhold_the_picks_and_serves_them_on_their_own():
+    """`per_pick` is the only part of the payload that grows with the
+    database, so the record page's first load withholds it and fetches the
+    same rows from `/track-record/picks` when its ledger is opened. The
+    figures and `by_round` ride along either way, and the default payload is
+    unchanged for every other reader."""
+    from fastapi.testclient import TestClient
+
+    from f1_predictor.api.main import app
+
+    _record_and_resolve(1, "2099-01-01T13:00:00+00:00", norris=0.6)
+    _record_and_resolve(2, "2020-01-01T13:00:00+00:00", norris=0.9)
+    client = TestClient(app)
+
+    slim = client.get("/api/track-record?session_type=race&include_picks=false").json()
+    assert slim["n_resolved"] == 16
+    assert slim["per_pick"] == []
+    assert {(r["season"], r["round"]) for r in slim["by_round"]} == {(2026, 1), (2026, 2)}
+
+    picks = client.get("/api/track-record/picks?session_type=race").json()
+    assert len(picks) == 16
+    full = client.get("/api/track-record?session_type=race").json()
+    assert picks == full["per_pick"], "the split serves the same rows, not a second version of them"

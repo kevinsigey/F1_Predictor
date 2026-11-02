@@ -226,6 +226,24 @@ class TrackRecordPick(BaseModel):
     counted: bool = True
 
 
+class TrackRecordRound(BaseModel):
+    """One round of the record, over its counted picks: the race strip's row.
+
+    `brier` is the round's mean probability error; `n_pre_session` and
+    `n_post_session` split the round's counted picks by when they were
+    recorded, so a round with late picks is marked rather than averaged in
+    silently. `n == n_pre_session + n_post_session` by construction.
+    """
+
+    season: int
+    round: int
+    race_name: str | None = None
+    n: int
+    brier: float
+    n_pre_session: int
+    n_post_session: int
+
+
 class TrackRecordResponse(BaseModel):
     """The track record: every recorded pick, and the pre-session subset.
 
@@ -253,8 +271,13 @@ class TrackRecordResponse(BaseModel):
     # the exclusion. Nothing is withheld by it any more.
     n_rebuilt_sessions: int = 0
     # Every recorded pick, counted or not, with its own timestamps and its own
-    # pre-session label.
+    # pre-session label. Withheld when the caller passes include_picks=false:
+    # it is the one part of this payload that grows with the database, and the
+    # record page only needs it when its every-pick ledger is opened (it is
+    # served on its own at /track-record/picks).
     per_pick: list[TrackRecordPick] = []
+    # Form over time: one row per round over the counted picks.
+    by_round: list[TrackRecordRound] = []
 
 
 class FeatureContribution(BaseModel):

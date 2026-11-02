@@ -34,6 +34,7 @@ function mock(
     by_market: [{ tier: "post_qualifying", market: "win", n: 20, brier: 0.04123, hit_rate: 0.05, avg_predicted_prob: 0.05 }],
     pre_session: { n_resolved: 4, by_market: [{ tier: "post_qualifying", market: "win", n: 10, brier: 0.021, hit_rate: 0.1, avg_predicted_prob: 0.1 }] },
     n_pre_session: 4, n_post_session_picks: 4,
+    by_round: [],
     ...ledger,
   } as TrackRecordResponse);
   vi.spyOn(api, "raceAccuracy").mockResolvedValue(accuracy);
@@ -61,7 +62,7 @@ describe("TrackRecordPage", () => {
     mock([entry(3, true, false)], 1);
     render(<TrackRecordPage />);
 
-    expect(await screen.findByText(/Every recorded pick, whenever it was made/)).toBeInTheDocument();
+    expect(await screen.findByText(/Every recorded prediction for a race session, checked against what actually happened/)).toBeInTheDocument();
     expect(screen.getByText(/Of these 8 picks, 4 were recorded at or after their session's start, and 4 before it/)).toBeInTheDocument();
     expect(screen.getByTestId("timing-note")).toHaveTextContent(
       "A pick recorded after the session started still counts, and is never presented as one made before it",
@@ -71,14 +72,21 @@ describe("TrackRecordPage", () => {
     expect(screen.queryByText(/and are left out/)).toBeNull();
   });
 
-  it("prints the pre-session ledger with its own n, beside the headline", async () => {
+  it("leads with the all-picks percentage and stands the pre-session figure beside it, with its own n", async () => {
     mock([entry(3, true, false)], 1);
     render(<TrackRecordPage />);
 
-    expect(await screen.findByText("Made before the session started")).toBeInTheDocument();
-    expect(within(screen.getByTestId("ledger")).getByText("20")).toBeInTheDocument();
-    expect(within(screen.getByTestId("pre-session-ledger")).getByText("10")).toBeInTheDocument();
-    expect(within(screen.getByTestId("pre-session-ledger")).getByText("0.021")).toBeInTheDocument();
+    const ledger = await screen.findByTestId("ledger");
+    const row = within(ledger).getByText("Win").closest("tr")!;
+    // The headline: right calls over every recorded pick, percent-forward.
+    expect(within(row).getByText("5.0%")).toBeInTheDocument();
+    expect(within(row).getByText("20 picks")).toBeInTheDocument();
+    // Beside it, smaller: the same market over the pre-session picks only,
+    // with its own n and its own probability error.
+    expect(within(row).getByText("10%")).toBeInTheDocument();
+    expect(within(row).getByText("10 picks")).toBeInTheDocument();
+    expect(within(row).getByText(/0\.021 before the session/)).toBeInTheDocument();
+    expect(within(ledger).getByText("Before the session")).toBeInTheDocument();
   });
 
   it("says the two figures are the same picks rather than printing the ledger twice", async () => {
@@ -91,7 +99,7 @@ describe("TrackRecordPage", () => {
     expect(await screen.findByTestId("timing-note")).toHaveTextContent(
       "Every pick in this ledger was recorded before its session started",
     );
-    expect(screen.queryByTestId("pre-session-ledger")).toBeNull();
+    expect(screen.getAllByTestId("ledger")).toHaveLength(1);
   });
 
   it("says the pre-session figure is empty rather than showing a zero", async () => {
@@ -134,7 +142,67 @@ describe("TrackRecordPage", () => {
     // Plain words stand in their place, each with an explainer.
     expect((await screen.findAllByText(/Probability error/)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Right calls/)).length).toBeGreaterThan(0);
-    expect((await screen.findAllByText(/Confidence band/)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Stated .* on average/)).length).toBeGreaterThan(0);
+  });
+
+  it("draws one strip cell per round and hollows the rounds recorded late", async () => {
+    mock([entry(3, true, false)], 1, {
+      by_round: [
+        { season: 2026, round: 1, race_name: "GP 1", n: 88, brier: 0.1, n_pre_session: 88, n_post_session: 0 },
+        { season: 2026, round: 2, race_name: "GP 2", n: 88, brier: 0.15, n_pre_session: 0, n_post_session: 88 },
+      ],
+    });
+    render(<TrackRecordPage />);
+
+    const cells = await screen.findAllByTestId("race-cell");
+    expect(cells).toHaveLength(2);
+    expect(cells[0]).not.toHaveAttribute("data-late");
+    expect(cells[1]).toHaveAttribute("data-late", "true");
+    expect(screen.getByText(/Includes picks recorded after the session started/)).toBeInTheDocument();
+  });
+
+  it("keeps every recorded pick behind a fold, fetched on open and labelled by when it was made", async () => {
+    mock([entry(3, true, false)], 1);
+    const picksSpy = vi.spyOn(api, "trackRecordPicks").mockResolvedValue([
+      {
+        season: 2026, round: 3, race_name: "GP 3", session_type: "race", tier: "post_qualifying",
+        driver_id: "max_verstappen", market: "win", predicted_prob: 0.68, actual_outcome: 1,
+        made_before_session: true, snapshotted_at: "2026-01-01T00:00:00+00:00",
+        session_time: "2026-01-02T00:00:00+00:00", counted: true,
+      },
+      {
+        season: 2026, round: 3, race_name: "GP 3", session_type: "race", tier: "post_qualifying",
+        driver_id: "lando_norris", market: "win", predicted_prob: 0.18, actual_outcome: 0,
+        made_before_session: false, snapshotted_at: "2026-01-03T00:00:00+00:00",
+        session_time: "2026-01-02T00:00:00+00:00", counted: true,
+      },
+    ]);
+    render(<TrackRecordPage />);
+
+    // Nothing is fetched, and no pick table exists, until the fold is opened.
+    await screen.findByTestId("ledger");
+    expect(picksSpy).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("every-pick-table")).toBeNull();
+
+    await user.click(screen.getByText("Every recorded pick"));
+
+    const table = await screen.findByTestId("every-pick-table");
+    expect(picksSpy).toHaveBeenCalledTimes(1);
+    expect(within(table).getByText("Max Verstappen")).toBeInTheDocument();
+    expect(within(table).getByText("Before the session")).toBeInTheDocument();
+    expect(within(table).getByText("Made after the session")).toBeInTheDocument();
+    expect(within(table).getByText("Happened")).toBeInTheDocument();
+    expect(within(table).getByText("Did not happen")).toBeInTheDocument();
+  });
+
+  it("states in How this is counted that post-session picks are included by the owner's decision", async () => {
+    mock([entry(3, true, false)], 1);
+    render(<TrackRecordPage />);
+
+    await screen.findByTestId("ledger");
+    expect(screen.getByText("How this is counted")).toBeInTheDocument();
+    expect(screen.getByText(/included in the figures above, labelled/)).toBeInTheDocument();
+    expect(screen.getByText(/owner's decision/)).toBeInTheDocument();
   });
 
   it("writes scores in plain numbers", async () => {

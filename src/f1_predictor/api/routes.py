@@ -837,7 +837,11 @@ def _get_championship_live(championship: str, season: int, n_trials: int) -> Cha
 
 
 @router.get("/track-record", response_model=TrackRecordResponse)
-def get_track_record(tier: str | None = None, session_type: str | None = None) -> TrackRecordResponse:
+def get_track_record(
+    tier: str | None = None,
+    session_type: str | None = None,
+    include_picks: bool = True,
+) -> TrackRecordResponse:
     """The headline over every recorded pick, and the pre-session subset.
 
     Two figures, served together, because they differ and both are true: the
@@ -850,7 +854,11 @@ def get_track_record(tier: str | None = None, session_type: str | None = None) -
     `snapshotted_at`, its own `session_time` and the derived
     `made_before_session`, so a reader can check the comparison rather than
     take it on trust. It is the whole record, not a sample, which is why it is
-    the only endpoint here that grows with the database.
+    the only part of the payload that grows with the database -- so a caller
+    that does not render it (the record page, until its every-pick ledger is
+    opened) can withhold it with `include_picks=false` and fetch the same
+    rows from `/track-record/picks` when it needs them. The default keeps
+    every existing reader's payload byte-for-byte what it was.
     """
     result = store.get_session_track_record(session_type=session_type, tier=tier)
 
@@ -868,8 +876,22 @@ def get_track_record(tier: str | None = None, session_type: str | None = None) -
         n_pre_session=result.get("n_pre_session", 0),
         n_post_session_picks=result.get("n_post_session_picks", 0),
         n_rebuilt_sessions=result.get("n_rebuilt_sessions", 0),
-        per_pick=[TrackRecordPick(**row) for row in result.get("per_pick", [])],
+        per_pick=(
+            [TrackRecordPick(**row) for row in result.get("per_pick", [])]
+            if include_picks
+            else []
+        ),
+        by_round=result.get("by_round", []),
     )
+
+
+@router.get("/track-record/picks", response_model=list[TrackRecordPick])
+def get_track_record_picks(tier: str | None = None, session_type: str | None = None) -> list[TrackRecordPick]:
+    """The per-pick disclosure on its own: the rows `/track-record` carries
+    as `per_pick`, for a reader that withheld them there with
+    `include_picks=false` and only needs them on demand."""
+    result = store.get_session_track_record(session_type=session_type, tier=tier)
+    return [TrackRecordPick(**row) for row in result.get("per_pick", [])]
 
 
 @router.get("/track-record/by-race", response_model=list[RaceAccuracyEntry])

@@ -1,67 +1,104 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
-import type { RaceAccuracyEntry, TrackRecordResponse } from "../types";
+import type { RaceAccuracyEntry, TrackRecordPick, TrackRecordResponse } from "../types";
 import { MARKET_LABELS, TIER_LABELS } from "../lib/glossary";
-import { ErrorState, Skeleton, StatTile, pct, pctFine, record, ProbabilityBar } from "../predictor-ui";
+import { ErrorState, Skeleton, StatTile, pct, pctFine, record, ProbabilityBar, HowCounted } from "../predictor-ui";
 import { RaceAccuracyTable } from "../components/RaceAccuracyTable";
+import { RaceStrip } from "../components/RaceStrip";
+import { EveryPicksTable } from "../components/EveryPicksTable";
 import { CalibrationBlock } from "../predictor-ui";
 import { InfoTooltip } from "../components/InfoTooltip";
 
 const plural = (n: number, one: string, many: string) => `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
 
-/** Turns a stated chance into the plain-words band it lives in. */
-function confidenceBandWords(p: number): string {
-  if (p < 0.5) return "Under 50% chance";
-  if (p < 0.6) return "Picked at 50-60% chance";
-  if (p < 0.7) return "Picked at 60-70% chance";
-  if (p < 0.8) return "Picked at 70-80% chance";
-  if (p < 0.9) return "Picked at 80-90% chance";
-  return "Picked at 90%+ chance";
-}
-
-/** The per-market ledger, over whatever rows it is handed.
+/**
+ * The per-market record, percent-forward.
  *
- * One component for the headline and for the pre-session subset, so the two
- * cannot drift into printing the same column headings with different
- * arithmetic under them. */
-function LedgerTable({ rows, testId }: { rows: TrackRecordResponse["by_market"]; testId: string }) {
+ * The big number is the right-calls share over EVERY recorded pick for the
+ * market; beside it, smaller and labelled, the same market over only the
+ * picks made before the session started. One component renders both figures
+ * from the two ledgers the API sends, so the pair cannot drift into printing
+ * the same headings with different arithmetic under them.
+ */
+function MarketLedger({
+  rows,
+  preRows,
+}: {
+  rows: TrackRecordResponse["by_market"];
+  preRows: TrackRecordResponse["by_market"];
+}) {
+  const pre = new Map(preRows.map((r) => [r.market, r]));
   return (
     <div className="overflow-x-auto">
-      <table data-testid={testId} className="w-full min-w-[30rem] border-collapse text-sm">
+      <table data-testid="ledger" className="w-full min-w-[36rem] border-collapse text-sm">
         <thead>
           <tr className="border-b border-pr-rule text-left font-pr-display text-xs uppercase tracking-wide text-pr-text-dim">
             <th className="py-2 pr-3 font-semibold">Market</th>
-            <th className="py-2 pr-3 text-right font-semibold">Predictions</th>
-            <th className="py-2 pr-3 text-right font-semibold">
-              Probability error{" "}
-              <InfoTooltip text="Probability error (lower is better): the squared gap between the predicted chance and what actually happened; 0 is perfect." />
-            </th>
             <th className="py-2 pr-3 text-right font-semibold">
               Right calls{" "}
               <InfoTooltip text="Right calls: the share of recorded picks that came true, out of every pick for this market." />
             </th>
-            <th className="py-2 pr-3 text-right font-semibold">Confidence band</th>
+            <th className="py-2 pr-3 text-right font-semibold">
+              Before the session{" "}
+              <InfoTooltip text="The same market over only the picks recorded before their session started — what the model said on the weekend, before anything ran." />
+            </th>
+            <th className="py-2 text-right font-semibold">
+              Probability error{" "}
+              <InfoTooltip text="Probability error (lower is better): the squared gap between the predicted chance and what actually happened; 0 is perfect." />
+            </th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={row.market} className="border-b border-pr-rule last:border-0">
-              <td className="py-2 pr-3 text-pr-text">{MARKET_LABELS[row.market] ?? row.market}</td>
-              <td className="py-2 pr-3 text-right tabular-nums text-pr-text-dim">{row.n.toLocaleString("en-US")}</td>
-              <td className="py-2 pr-3 text-right tabular-nums text-pr-text-dim">{row.brier.toFixed(3)}</td>
-              <td className="py-2 pr-3 text-right tabular-nums text-pr-text-dim">{pctFine(row.hit_rate)}</td>
-              <td className="py-2 pr-3 text-pr-text">
-                <div className="text-sm text-pr-text">{confidenceBandWords(row.avg_predicted_prob)}</div>
-                <ProbabilityBar
-                  segments={[
-                    { label: "Right", prob: row.hit_rate },
-                    { label: "Wrong", prob: Math.max(0, 1 - row.hit_rate) },
-                  ]}
-                  minSegmentPx={6}
-                />
-              </td>
-            </tr>
-          ))}
+          {rows.map((row) => {
+            const before = pre.get(row.market);
+            return (
+              <tr key={row.market} className="border-b border-pr-rule last:border-0">
+                <td className="py-2 pr-3 text-pr-text">
+                  <div>{MARKET_LABELS[row.market] ?? row.market}</div>
+                  <div className="text-xs text-pr-text-faint">Stated {pctFine(row.avg_predicted_prob)} on average</div>
+                </td>
+                <td className="w-48 py-2 pr-3 text-right">
+                  <span className="font-pr-display text-2xl font-semibold tabular-nums text-pr-text">
+                    {pctFine(row.hit_rate)}
+                  </span>
+                  <div className="mt-1">
+                    <ProbabilityBar
+                      segments={[
+                        { label: "Right", prob: row.hit_rate },
+                        { label: "Wrong", prob: Math.max(0, 1 - row.hit_rate) },
+                      ]}
+                      minSegmentPx={6}
+                    />
+                  </div>
+                  <div className="mt-1 text-xs tabular-nums text-pr-text-faint">
+                    {row.n.toLocaleString("en-US")} picks
+                  </div>
+                </td>
+                <td className="py-2 pr-3 text-right">
+                  {before ? (
+                    <>
+                      <span className="text-base font-semibold tabular-nums text-pr-text">
+                        {pctFine(before.hit_rate)}
+                      </span>
+                      <div className="mt-1 text-xs tabular-nums text-pr-text-faint">
+                        {before.n.toLocaleString("en-US")} picks
+                      </div>
+                    </>
+                  ) : (
+                    <span className="text-pr-text-faint">—</span>
+                  )}
+                </td>
+                <td className="py-2 text-right">
+                  <span className="tabular-nums text-pr-text">{row.brier.toFixed(3)}</span>
+                  {before && (
+                    <div className="text-xs tabular-nums text-pr-text-faint">
+                      {before.brier.toFixed(3)} before the session
+                    </div>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -73,20 +110,38 @@ export function TrackRecordPage() {
   const [accuracy, setAccuracy] = useState<RaceAccuracyEntry[] | null>(null);
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  // The every-pick ledger is fetched only when its fold is first opened:
+  // the rows are the one part of the payload that grows with the database,
+  // and most readers never open it.
+  const [picks, setPicks] = useState<TrackRecordPick[] | null>(null);
+  const [picksError, setPicksError] = useState(false);
+  const [picksRequested, setPicksRequested] = useState(false);
 
   useEffect(() => {
     setError(false);
     setData(null);
     setAccuracy(null);
+    setPicks(null);
+    setPicksError(false);
+    setPicksRequested(false);
     // session_type="race" keeps race predictions apart from the qualifying
-    // and sprint snapshots stored alongside them.
-    Promise.all([api.trackRecord(undefined, "race"), api.raceAccuracy("post_qualifying", "race")])
+    // and sprint snapshots stored alongside them. The picks are withheld
+    // from this first load (includePicks=false) and fetched on demand.
+    Promise.all([api.trackRecord(undefined, "race", false), api.raceAccuracy("post_qualifying", "race")])
       .then(([record, byRace]) => {
         setData(record);
         setAccuracy(byRace);
       })
       .catch(() => setError(true));
   }, [reloadKey]);
+
+  const fetchPicks = () => {
+    setPicksError(false);
+    api
+      .trackRecordPicks(undefined, "race")
+      .then(setPicks)
+      .catch(() => setPicksError(true));
+  };
 
   if (error) {
     return <ErrorState message="We couldn't load the track record. Check your connection and try again." onRetry={() => setReloadKey((k) => k + 1)} />;
@@ -100,7 +155,7 @@ export function TrackRecordPage() {
   // The headline counts every recorded pick, whenever it was made, so
   // `n_rebuilt_sessions` is no longer what was withheld -- it is how many
   // sessions had a pick recorded at or after their own start, and the
-  // reconciliation against the pre-session subset below it.
+  // reconciliation against the pre-session subset beside it.
   const afterStart = data.n_rebuilt_sessions ?? 0;
   const preSession = data.n_pre_session ?? data.pre_session?.n_resolved ?? 0;
   const postSessionPicks = data.n_post_session_picks ?? Math.max(0, data.n_resolved - preSession);
@@ -112,6 +167,7 @@ export function TrackRecordPage() {
     },
     {},
   );
+  const byRound = data.by_round ?? [];
 
   // The by-race table is a different view and keeps its own strict rule: it
   // judges a session only when its snapshot was written before it started.
@@ -122,13 +178,81 @@ export function TrackRecordPage() {
 
   return (
     <div className="flex flex-col gap-5">
+      {/* Kevin's call, 2026-11-01: F1's record shows EVERY recorded
+          prediction, including the ones recorded after their session
+          started. There is no betting market to compare an F1 prediction
+          against, so each pick is checked against what actually happened;
+          the late ones are labelled wherever they appear, and the
+          pre-session figure stands beside every headline number, so the
+          two are never silently mixed. This section is that record. */}
+      <section className="rounded-pr border border-pr-rule bg-pr-panel p-4 sm:p-5">
+        <h2 className="font-pr-display text-2xl font-bold uppercase tracking-wide text-pr-text">Track record</h2>
+        <p className="mb-4 max-w-2xl text-sm text-pr-text-dim">
+          Every recorded prediction for a race session, checked against what actually happened. There are
+          no betting odds to compare a Formula 1 prediction against, so the comparison is the prediction
+          against the result: the chance the model stated, and whether it happened. One counted pick per
+          session, driver and market — the first one recorded; a re-run of the model on a session that has
+          already run does not replace that pick or count a second time.
+          {postSessionPicks > 0 &&
+            ` Of these ${data.n_resolved.toLocaleString("en-US")} picks, ${postSessionPicks.toLocaleString("en-US")} were recorded at or after their session's start, and ${preSession.toLocaleString("en-US")} before it.`}
+        </p>
+        <p data-testid="timing-note" className="mb-4 max-w-3xl rounded-pr border border-pr-rule bg-pr-panel-2 px-3 py-2 text-sm text-pr-text-dim">
+          {postSessionPicks === 0
+            ? "Every pick in this ledger was recorded before its session started, so the before-the-session figure beside each market is the same number over the same picks."
+            : "A pick recorded after the session started still counts, and is never presented as one made before it: every row the API sends carries both timestamps and the derived label. The figure beside each market is that same market over only the picks made before the session — what the model said on the weekend."}
+        </p>
+        {data.n_resolved === 0 && <p className="py-4 text-sm text-pr-text-dim">No resolved predictions yet. They appear as sessions are run.</p>}
+        {preSession === 0 && data.n_resolved > 0 && (
+          <p className="mb-4 max-w-2xl text-sm text-pr-text-dim">
+            No pick has been recorded in time yet, so this figure is empty rather than zero. It fills in as
+            sessions are snapshotted before they start.
+          </p>
+        )}
+
+        {Object.entries(grouped).map(([tier, rows]) => (
+          <div key={tier} className="mb-5 last:mb-0">
+            <h3 className="mb-2 font-pr-display text-sm font-semibold uppercase tracking-wide text-pr-text-dim">{TIER_LABELS[tier] ?? tier}</h3>
+            <MarketLedger rows={rows} preRows={preGrouped[tier] ?? []} />
+          </div>
+        ))}
+
+        {data.calibration && Object.keys(data.calibration).length > 0 && (
+          <div className="mt-6 border-t border-pr-rule pt-4">
+            <CalibrationBlock
+              series={Object.entries(data.calibration).map(([market, buckets]) => ({
+                key: market,
+                label: MARKET_LABELS[market] ?? market,
+                buckets: (buckets ?? []).filter((b) => b.n > 0).map((b) => ({ bucket: b.bucket, n: b.n, correct: b.correct })),
+              }))}
+              markets={data.by_market.map((row) => ({
+                key: row.market,
+                label: MARKET_LABELS[row.market] ?? row.market,
+                counted: { correct: Math.round(row.hit_rate * row.n), n: row.n },
+              }))}
+            />
+          </div>
+        )}
+      </section>
+
+      {byRound.length > 0 && (
+        <section className="rounded-pr border border-pr-rule bg-pr-panel p-4 sm:p-5">
+          <h2 className="font-pr-display text-2xl font-bold uppercase tracking-wide text-pr-text">Race by race</h2>
+          <p className="mb-4 max-w-2xl text-sm text-pr-text-dim">
+            One cell per round, over the counted picks: how sharp the model&apos;s stated chances were that
+            weekend, across every market. A hollow cell is a round whose picks were recorded after the
+            session started.
+          </p>
+          <RaceStrip rounds={byRound} />
+        </section>
+      )}
+
       <section className="rounded-pr border border-pr-rule bg-pr-panel p-4 sm:p-5">
         <h2 className="font-pr-display text-2xl font-bold uppercase tracking-wide text-pr-text">Accuracy by race</h2>
         <p className="mb-4 max-w-2xl text-sm text-pr-text-dim">
           This table judges only sessions snapshotted before they ran.
           {afterStart > 0 &&
             ` ${plural(afterStart, "session has", "sessions have")} at least one pick recorded at or after the start — a re-run of the model, not a pre-session call.`}
-          {" "}Each race compares the post-qualifying prediction with what happened: the predicted winner, and how many of the predicted top 3 and top 10 landed there. The full record, including the sessions this table skips, is the calibration ledger below.
+          {" "}Each race compares the post-qualifying prediction with what happened: the predicted winner, and how many of the predicted top 3 and top 10 landed there. The full record, including the sessions this table skips, is the track record above.
         </p>
 
         {counted.length === 0 ? (
@@ -157,64 +281,56 @@ export function TrackRecordPage() {
         <RaceAccuracyTable entries={accuracy} />
       </section>
 
-      <section className="rounded-pr border border-pr-rule bg-pr-panel p-4 sm:p-5">
-        <h2 className="font-pr-display text-2xl font-bold uppercase tracking-wide text-pr-text">Calibration by market</h2>
-        <p className="mb-4 max-w-2xl text-sm text-pr-text-dim">
-          Every recorded pick, whenever it was made — one counted pick per session, driver and
-          market, the first one recorded. A re-run of the model on a session that has already run
-          does not replace that pick or count a second time.
-          {postSessionPicks > 0 &&
-            ` Of these ${data.n_resolved.toLocaleString("en-US")} picks, ${postSessionPicks.toLocaleString("en-US")} were recorded at or after their session's start, and ${preSession.toLocaleString("en-US")} before it.`}
-        </p>
-        <p data-testid="timing-note" className="mb-4 max-w-3xl rounded-pr border border-pr-rule bg-pr-panel-2 px-3 py-2 text-sm text-pr-text-dim">
-          {postSessionPicks === 0
-            ? "Every pick in this ledger was recorded before its session started, so the pre-session table below is the same number over the same picks."
-            : `A pick recorded after the session started still counts, and is never presented as one made before it: every row the API sends carries both timestamps and the derived label. Read the pre-session table below for what the model would have said on the weekend.`}
-        </p>
-        {data.n_resolved === 0 && <p className="py-4 text-sm text-pr-text-dim">No resolved predictions yet. They appear as sessions are run.</p>}
-        {data && data.calibration && Object.keys(data.calibration).length > 0 && (
-          <CalibrationBlock
-            series={Object.entries(data.calibration).map(([market, buckets]) => ({
-              key: market,
-              label: MARKET_LABELS[market] ?? market,
-              buckets: (buckets ?? []).filter((b) => b.n > 0).map((b) => ({ bucket: b.bucket, n: b.n, correct: b.correct })),
-            }))}
-            markets={data.by_market.map((row) => ({
-              key: row.market,
-              label: MARKET_LABELS[row.market] ?? row.market,
-              counted: { correct: Math.round(row.hit_rate * row.n), n: row.n },
-            }))}
-          />
-        )}
-
-        {Object.entries(grouped).map(([tier, rows]) => (
-          <div key={tier} className="mb-5 last:mb-0">
-            <h3 className="mb-2 font-pr-display text-sm font-semibold uppercase tracking-wide text-pr-text-dim">{TIER_LABELS[tier] ?? tier}</h3>
-            <LedgerTable rows={rows} testId="ledger" />
-          </div>
-        ))}
-
-        <div className="mt-6 border-t border-pr-rule pt-4">
-          <h3 className="mb-2 font-pr-display text-sm font-semibold uppercase tracking-wide text-pr-text-dim">
-            Made before the session started
-          </h3>
-          <p className="mb-3 max-w-2xl text-xs leading-relaxed text-pr-text-dim">
-            The same ledger over the {preSession.toLocaleString("en-US")} picks whose own
-            timestamps prove they were recorded before their session started. There are no betting
-            odds to compare F1 predictions against, so each snapshot is checked against the
-            result: probability error, lower is better, and the right calls should track the
-            stated chance.
-          </p>
-          {preSession === 0
-            ? "No pick has been recorded in time yet, so this figure is empty rather than zero. It fills in as sessions are snapshotted before they start."
-            : Object.entries(preGrouped).map(([tier, rows]) => (
-                <div key={`pre-${tier}`} className="mb-5 last:mb-0">
-                  <h4 className="mb-2 font-pr-display text-xs font-semibold uppercase tracking-wide text-pr-text-faint">{TIER_LABELS[tier] ?? tier}</h4>
-                  <LedgerTable rows={rows} testId="pre-session-ledger" />
-                </div>
-              ))}
+      <details
+        className="rounded-pr border border-pr-rule bg-pr-panel px-4 py-3 text-sm"
+        onToggle={(e) => {
+          if ((e.currentTarget as HTMLDetailsElement).open && !picksRequested) {
+            setPicksRequested(true);
+            fetchPicks();
+          }
+        }}
+      >
+        <summary className="cursor-pointer font-semibold text-pr-text">Every recorded pick</summary>
+        <div className="mt-3">
+          {!picksRequested ? null : picksError ? (
+            <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-pr border border-pr-loss/50 bg-pr-panel px-4 py-3 text-sm text-pr-text">
+              <span>We couldn&apos;t load the recorded picks.</span>
+              <button type="button" onClick={fetchPicks} className="rounded-pr border border-pr-rule bg-pr-panel-2 px-3 py-1.5 text-xs font-semibold text-pr-text hover:border-pr-accent">
+                Try again
+              </button>
+            </div>
+          ) : picks === null ? (
+            <Skeleton label="Loading recorded picks…" />
+          ) : (
+            <>
+              <p className="mb-3 max-w-2xl text-sm text-pr-text-dim">
+                {picks.length.toLocaleString("en-US")} recorded picks, counted and not. The counted pick for a
+                session, driver and market is the first one recorded; a later re-run is printed here marked
+                Not counted and never replaces it.
+              </p>
+              <EveryPicksTable picks={picks} />
+            </>
+          )}
         </div>
-      </section>
+      </details>
+
+      <HowCounted moment="the session" headline="counted">
+        <p>
+          Predictions recorded after their session started are included in the figures above, labelled
+          wherever they appear. That is the owner&apos;s decision (November 2026): this model&apos;s record is
+          the whole record, and with no betting market to compare against, each prediction is judged against
+          what actually happened, whenever it was recorded.
+        </p>
+        <p>
+          A session can be recorded more than once when the model is re-run. The later rows are published in
+          the ledger of every recorded pick, marked Not counted; they never replace the counted pick and are
+          never scored.
+        </p>
+        <p>
+          Every pick here is a yes-or-no chance, so nothing lands on a line: there are no pushes. A pick
+          joins this record only once its session has been run and graded.
+        </p>
+      </HowCounted>
     </div>
   );
 }
