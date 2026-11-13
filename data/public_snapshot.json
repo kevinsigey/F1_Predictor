@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-12T20:25:02.452052+00:00",
+  "generated_at": "2026-11-13T07:15:11.772676+00:00",
   "season": 2026,
   "current_round": 21,
   "races": [
@@ -5909,7 +5909,7 @@
           "p_podium": 0.4543,
           "p_points_finish": 0.8452,
           "p_dnf": 0.1468,
-          "expected_position": 6.3408,
+          "expected_position": 6.3498,
           "expected_points": 12.3026,
           "actual_position": null,
           "actual_dnf": null
@@ -5922,7 +5922,7 @@
           "p_podium": 0.4379,
           "p_points_finish": 0.8498,
           "p_dnf": 0.1398,
-          "expected_position": 6.3241,
+          "expected_position": 6.3412,
           "expected_points": 12.0974,
           "actual_position": null,
           "actual_dnf": null
@@ -5935,7 +5935,7 @@
           "p_podium": 0.3445,
           "p_points_finish": 0.8438,
           "p_dnf": 0.132,
-          "expected_position": 6.8738,
+          "expected_position": 6.8625,
           "expected_points": 10.5337,
           "actual_position": null,
           "actual_dnf": null
@@ -5948,7 +5948,7 @@
           "p_podium": 0.3127,
           "p_points_finish": 0.8353,
           "p_dnf": 0.1285,
-          "expected_position": 7.1007,
+          "expected_position": 7.0982,
           "expected_points": 9.9201,
           "actual_position": null,
           "actual_dnf": null
@@ -5961,7 +5961,7 @@
           "p_podium": 0.304,
           "p_points_finish": 0.8123,
           "p_dnf": 0.1434,
-          "expected_position": 7.4317,
+          "expected_position": 7.4331,
           "expected_points": 9.6089,
           "actual_position": null,
           "actual_dnf": null
@@ -5974,7 +5974,7 @@
           "p_podium": 0.2678,
           "p_points_finish": 0.7827,
           "p_dnf": 0.1722,
-          "expected_position": 8.0735,
+          "expected_position": 8.0833,
           "expected_points": 8.8585,
           "actual_position": null,
           "actual_dnf": null
@@ -5987,7 +5987,7 @@
           "p_podium": 0.2492,
           "p_points_finish": 0.7847,
           "p_dnf": 0.1462,
-          "expected_position": 7.9971,
+          "expected_position": 7.9912,
           "expected_points": 8.4771,
           "actual_position": null,
           "actual_dnf": null
@@ -6000,7 +6000,7 @@
           "p_podium": 0.0958,
           "p_points_finish": 0.5196,
           "p_dnf": 0.1679,
-          "expected_position": 11.1027,
+          "expected_position": 11.091,
           "expected_points": 4.0432,
           "actual_position": null,
           "actual_dnf": null
@@ -6013,7 +6013,7 @@
           "p_podium": 0.0816,
           "p_points_finish": 0.4947,
           "p_dnf": 0.1687,
-          "expected_position": 11.3441,
+          "expected_position": 11.3389,
           "expected_points": 3.6831,
           "actual_position": null,
           "actual_dnf": null
@@ -6026,7 +6026,7 @@
           "p_podium": 0.0657,
           "p_points_finish": 0.4257,
           "p_dnf": 0.1692,
-          "expected_position": 12.0594,
+          "expected_position": 12.0623,
           "expected_points": 3.0344,
           "actual_position": null,
           "actual_dnf": null
@@ -6039,7 +6039,7 @@
           "p_podium": 0.0624,
           "p_points_finish": 0.4033,
           "p_dnf": 0.1725,
-          "expected_position": 12.293,
+          "expected_position": 12.2829,
           "expected_points": 2.8413,
           "actual_position": null,
           "actual_dnf": null
@@ -6052,7 +6052,7 @@
           "p_podium": 0.06,
           "p_points_finish": 0.425,
           "p_dnf": 0.0623,
-          "expected_position": 11.4509,
+          "expected_position": 11.4512,
           "expected_points": 2.8759,
           "actual_position": null,
           "actual_dnf": null
@@ -6065,7 +6065,7 @@
           "p_podium": 0.044,
           "p_points_finish": 0.3259,
           "p_dnf": 0.0697,
-          "expected_position": 12.5786,
+          "expected_position": 12.5854,
           "expected_points": 2.1456,
           "actual_position": null,
           "actual_dnf": null
@@ -6078,7 +6078,7 @@
           "p_podium": 0.038,
           "p_points_finish": 0.2755,
           "p_dnf": 0.0754,
-          "expected_position": 13.2185,
+          "expected_position": 13.2261,
           "expected_points": 1.8193,
           "actual_position": null,
           "actual_dnf": null
@@ -6091,7 +6091,7 @@
           "p_podium": 0.0299,
           "p_points_finish": 0.2087,
           "p_dnf": 0.156,
-          "expected_position": 14.6344,
+          "expected_position": 14.6399,
           "expected_points": 1.3688,
           "actual_position": null,
           "actual_dnf": null
@@ -6104,7 +6104,7 @@
           "p_podium": 0.028,
           "p_points_finish": 0.1984,
           "p_dnf": 0.1878,
-          "expected_position": 14.9497,
+          "expected_position": 14.9475,
           "expected_points": 1.295,
           "actual_position": null,
           "actual_dnf": null
@@ -6117,7 +6117,7 @@
           "p_podium": 0.0239,
           "p_points_finish": 0.1873,
           "p_dnf": 0.1647,
-          "expected_position": 15.033,
+          "expected_position": 15.0321,
           "expected_points": 1.1758,
           "actual_position": null,
           "actual_dnf": null
@@ -6130,7 +6130,7 @@
           "p_podium": 0.0262,
           "p_points_finish": 0.2118,
           "p_dnf": 0.0795,
-          "expected_position": 14.2909,
+          "expected_position": 14.2884,
           "expected_points": 1.3076,
           "actual_position": null,
           "actual_dnf": null
@@ -6143,7 +6143,7 @@
           "p_podium": 0.0174,
           "p_points_finish": 0.1438,
           "p_dnf": 0.1832,
-          "expected_position": 15.9558,
+          "expected_position": 15.9641,
           "expected_points": 0.9105,
           "actual_position": null,
           "actual_dnf": null
@@ -6156,7 +6156,7 @@
           "p_podium": 0.0146,
           "p_points_finish": 0.0957,
           "p_dnf": 0.1783,
-          "expected_position": 16.9187,
+          "expected_position": 16.9143,
           "expected_points": 0.6413,
           "actual_position": null,
           "actual_dnf": null
@@ -6169,7 +6169,7 @@
           "p_podium": 0.0178,
           "p_points_finish": 0.1416,
           "p_dnf": 0.1742,
-          "expected_position": 15.8849,
+          "expected_position": 15.8767,
           "expected_points": 0.879,
           "actual_position": null,
           "actual_dnf": null
@@ -6182,7 +6182,7 @@
           "p_podium": 0.0128,
           "p_points_finish": 0.1024,
           "p_dnf": 0.1748,
-          "expected_position": 16.809,
+          "expected_position": 16.8059,
           "expected_points": 0.6457,
           "actual_position": null,
           "actual_dnf": null
@@ -6195,7 +6195,7 @@
           "p_podium": 0.0115,
           "p_points_finish": 0.0868,
           "p_dnf": 0.2246,
-          "expected_position": 17.3347,
+          "expected_position": 17.334,
           "expected_points": 0.5352,
           "actual_position": null,
           "actual_dnf": null
@@ -6232,7 +6232,7 @@
           "p_podium": 0.4669,
           "p_points_finish": 0.8544,
           "p_dnf": 0.1396,
-          "expected_position": 6.1332,
+          "expected_position": 6.1304,
           "expected_points": 12.6126,
           "actual_position": null,
           "actual_dnf": null
@@ -6245,7 +6245,7 @@
           "p_podium": 0.4182,
           "p_points_finish": 0.8538,
           "p_dnf": 0.1395,
-          "expected_position": 6.4187,
+          "expected_position": 6.4272,
           "expected_points": 11.8207,
           "actual_position": null,
           "actual_dnf": null
@@ -6258,7 +6258,7 @@
           "p_podium": 0.3864,
           "p_points_finish": 0.846,
           "p_dnf": 0.1414,
-          "expected_position": 6.6497,
+          "expected_position": 6.6496,
           "expected_points": 11.2751,
           "actual_position": null,
           "actual_dnf": null
@@ -6271,7 +6271,7 @@
           "p_podium": 0.3479,
           "p_points_finish": 0.8429,
           "p_dnf": 0.1392,
-          "expected_position": 6.9132,
+          "expected_position": 6.9142,
           "expected_points": 10.583,
           "actual_position": null,
           "actual_dnf": null
@@ -6284,7 +6284,7 @@
           "p_podium": 0.3076,
           "p_points_finish": 0.8337,
           "p_dnf": 0.1384,
-          "expected_position": 7.2309,
+          "expected_position": 7.2349,
           "expected_points": 9.8051,
           "actual_position": null,
           "actual_dnf": null
@@ -6297,7 +6297,7 @@
           "p_podium": 0.3026,
           "p_points_finish": 0.8305,
           "p_dnf": 0.1406,
-          "expected_position": 7.3,
+          "expected_position": 7.29,
           "expected_points": 9.7393,
           "actual_position": null,
           "actual_dnf": null
@@ -6310,7 +6310,7 @@
           "p_podium": 0.1968,
           "p_points_finish": 0.7616,
           "p_dnf": 0.1478,
-          "expected_position": 8.5028,
+          "expected_position": 8.5079,
           "expected_points": 7.4171,
           "actual_position": null,
           "actual_dnf": null
@@ -6323,7 +6323,7 @@
           "p_podium": 0.1634,
           "p_points_finish": 0.7322,
           "p_dnf": 0.1384,
-          "expected_position": 8.8635,
+          "expected_position": 8.8588,
           "expected_points": 6.5585,
           "actual_position": null,
           "actual_dnf": null
@@ -6336,7 +6336,7 @@
           "p_podium": 0.0659,
           "p_points_finish": 0.4713,
           "p_dnf": 0.1704,
-          "expected_position": 11.6406,
+          "expected_position": 11.6474,
           "expected_points": 3.1723,
           "actual_position": null,
           "actual_dnf": null
@@ -6349,7 +6349,7 @@
           "p_podium": 0.0511,
           "p_points_finish": 0.4153,
           "p_dnf": 0.0658,
-          "expected_position": 11.6168,
+          "expected_position": 11.6103,
           "expected_points": 2.6358,
           "actual_position": null,
           "actual_dnf": null
@@ -6362,7 +6362,7 @@
           "p_podium": 0.0479,
           "p_points_finish": 0.3763,
           "p_dnf": 0.1683,
-          "expected_position": 12.5853,
+          "expected_position": 12.58,
           "expected_points": 2.409,
           "actual_position": null,
           "actual_dnf": null
@@ -6375,7 +6375,7 @@
           "p_podium": 0.0389,
           "p_points_finish": 0.3371,
           "p_dnf": 0.0663,
-          "expected_position": 12.4246,
+          "expected_position": 12.4278,
           "expected_points": 2.0578,
           "actual_position": null,
           "actual_dnf": null
@@ -6388,7 +6388,7 @@
           "p_podium": 0.0321,
           "p_points_finish": 0.2946,
           "p_dnf": 0.172,
-          "expected_position": 13.5227,
+          "expected_position": 13.5248,
           "expected_points": 1.7928,
           "actual_position": null,
           "actual_dnf": null
@@ -6401,7 +6401,7 @@
           "p_podium": 0.0372,
           "p_points_finish": 0.2922,
           "p_dnf": 0.077,
-          "expected_position": 13.0375,
+          "expected_position": 13.0402,
           "expected_points": 1.7991,
           "actual_position": null,
           "actual_dnf": null
@@ -6414,7 +6414,7 @@
           "p_podium": 0.0216,
           "p_points_finish": 0.2075,
           "p_dnf": 0.0785,
-          "expected_position": 14.3056,
+          "expected_position": 14.3029,
           "expected_points": 1.1891,
           "actual_position": null,
           "actual_dnf": null
@@ -6427,7 +6427,7 @@
           "p_podium": 0.0187,
           "p_points_finish": 0.1617,
           "p_dnf": 0.1739,
-          "expected_position": 15.5011,
+          "expected_position": 15.5063,
           "expected_points": 0.9478,
           "actual_position": null,
           "actual_dnf": null
@@ -6440,7 +6440,7 @@
           "p_podium": 0.0195,
           "p_points_finish": 0.1715,
           "p_dnf": 0.1806,
-          "expected_position": 15.2778,
+          "expected_position": 15.2803,
           "expected_points": 1.0057,
           "actual_position": null,
           "actual_dnf": null
@@ -6453,7 +6453,7 @@
           "p_podium": 0.0151,
           "p_points_finish": 0.1483,
           "p_dnf": 0.1763,
-          "expected_position": 15.6686,
+          "expected_position": 15.6753,
           "expected_points": 0.8537,
           "actual_position": null,
           "actual_dnf": null
@@ -6466,7 +6466,7 @@
           "p_podium": 0.0136,
           "p_points_finish": 0.1425,
           "p_dnf": 0.1718,
-          "expected_position": 15.8776,
+          "expected_position": 15.8665,
           "expected_points": 0.8097,
           "actual_position": null,
           "actual_dnf": null
@@ -6479,7 +6479,7 @@
           "p_podium": 0.0138,
           "p_points_finish": 0.1241,
           "p_dnf": 0.1734,
-          "expected_position": 16.1799,
+          "expected_position": 16.1775,
           "expected_points": 0.7328,
           "actual_position": null,
           "actual_dnf": null
@@ -6492,7 +6492,7 @@
           "p_podium": 0.0118,
           "p_points_finish": 0.1072,
           "p_dnf": 0.1818,
-          "expected_position": 16.6597,
+          "expected_position": 16.6566,
           "expected_points": 0.6291,
           "actual_position": null,
           "actual_dnf": null
@@ -6505,7 +6505,7 @@
           "p_podium": 0.0105,
           "p_points_finish": 0.0873,
           "p_dnf": 0.2292,
-          "expected_position": 17.1304,
+          "expected_position": 17.1254,
           "expected_points": 0.5214,
           "actual_position": null,
           "actual_dnf": null
@@ -6518,7 +6518,7 @@
           "p_podium": 0.0125,
           "p_points_finish": 0.108,
           "p_dnf": 0.1859,
-          "expected_position": 16.5598,
+          "expected_position": 16.5657,
           "expected_points": 0.6325,
           "actual_position": null,
           "actual_dnf": null
@@ -6555,7 +6555,7 @@
           "p_podium": 0.4233,
           "p_points_finish": 0.8458,
           "p_dnf": 0.143,
-          "expected_position": 6.4727,
+          "expected_position": 6.4799,
           "expected_points": 11.828,
           "actual_position": null,
           "actual_dnf": null
@@ -6568,7 +6568,7 @@
           "p_podium": 0.4247,
           "p_points_finish": 0.8419,
           "p_dnf": 0.1452,
-          "expected_position": 6.5297,
+          "expected_position": 6.5269,
           "expected_points": 11.7653,
           "actual_position": null,
           "actual_dnf": null
@@ -6581,7 +6581,7 @@
           "p_podium": 0.3899,
           "p_points_finish": 0.8208,
           "p_dnf": 0.1635,
-          "expected_position": 7.0026,
+          "expected_position": 7.0055,
           "expected_points": 11.1184,
           "actual_position": null,
           "actual_dnf": null
@@ -6594,7 +6594,7 @@
           "p_podium": 0.3207,
           "p_points_finish": 0.8281,
           "p_dnf": 0.1375,
-          "expected_position": 7.167,
+          "expected_position": 7.1761,
           "expected_points": 10.0251,
           "actual_position": null,
           "actual_dnf": null
@@ -6607,7 +6607,7 @@
           "p_podium": 0.3128,
           "p_points_finish": 0.8236,
           "p_dnf": 0.138,
-          "expected_position": 7.2394,
+          "expected_position": 7.2342,
           "expected_points": 9.854,
           "actual_position": null,
           "actual_dnf": null
@@ -6620,7 +6620,7 @@
           "p_podium": 0.2295,
           "p_points_finish": 0.7796,
           "p_dnf": 0.1426,
-          "expected_position": 8.15,
+          "expected_position": 8.139,
           "expected_points": 8.0862,
           "actual_position": null,
           "actual_dnf": null
@@ -6633,7 +6633,7 @@
           "p_podium": 0.2193,
           "p_points_finish": 0.7529,
           "p_dnf": 0.1596,
-          "expected_position": 8.5392,
+          "expected_position": 8.5387,
           "expected_points": 7.6639,
           "actual_position": null,
           "actual_dnf": null
@@ -6646,7 +6646,7 @@
           "p_podium": 0.1595,
           "p_points_finish": 0.695,
           "p_dnf": 0.1452,
-          "expected_position": 9.1625,
+          "expected_position": 9.1657,
           "expected_points": 6.2927,
           "actual_position": null,
           "actual_dnf": null
@@ -6659,7 +6659,7 @@
           "p_podium": 0.0914,
           "p_points_finish": 0.5148,
           "p_dnf": 0.1824,
-          "expected_position": 11.2083,
+          "expected_position": 11.2106,
           "expected_points": 3.9689,
           "actual_position": null,
           "actual_dnf": null
@@ -6672,7 +6672,7 @@
           "p_podium": 0.0617,
           "p_points_finish": 0.4402,
           "p_dnf": 0.0662,
-          "expected_position": 11.2813,
+          "expected_position": 11.2787,
           "expected_points": 2.9917,
           "actual_position": null,
           "actual_dnf": null
@@ -6685,7 +6685,7 @@
           "p_podium": 0.0526,
           "p_points_finish": 0.3303,
           "p_dnf": 0.1861,
-          "expected_position": 13.1298,
+          "expected_position": 13.1299,
           "expected_points": 2.3179,
           "actual_position": null,
           "actual_dnf": null
@@ -6698,7 +6698,7 @@
           "p_podium": 0.0518,
           "p_points_finish": 0.3504,
           "p_dnf": 0.0638,
-          "expected_position": 12.2472,
+          "expected_position": 12.2478,
           "expected_points": 2.3894,
           "actual_position": null,
           "actual_dnf": null
@@ -6711,7 +6711,7 @@
           "p_podium": 0.0498,
           "p_points_finish": 0.3457,
           "p_dnf": 0.1845,
-          "expected_position": 12.9022,
+          "expected_position": 12.9014,
           "expected_points": 2.3668,
           "actual_position": null,
           "actual_dnf": null
@@ -6724,7 +6724,7 @@
           "p_podium": 0.035,
           "p_points_finish": 0.2627,
           "p_dnf": 0.07,
-          "expected_position": 13.3907,
+          "expected_position": 13.392,
           "expected_points": 1.7004,
           "actual_position": null,
           "actual_dnf": null
@@ -6737,7 +6737,7 @@
           "p_podium": 0.0238,
           "p_points_finish": 0.2007,
           "p_dnf": 0.0759,
-          "expected_position": 14.4024,
+          "expected_position": 14.4022,
           "expected_points": 1.266,
           "actual_position": null,
           "actual_dnf": null
@@ -6750,7 +6750,7 @@
           "p_podium": 0.024,
           "p_points_finish": 0.1711,
           "p_dnf": 0.1699,
-          "expected_position": 15.363,
+          "expected_position": 15.3778,
           "expected_points": 1.1079,
           "actual_position": null,
           "actual_dnf": null
@@ -6763,7 +6763,7 @@
           "p_podium": 0.0257,
           "p_points_finish": 0.1893,
           "p_dnf": 0.1709,
-          "expected_position": 14.9975,
+          "expected_position": 14.9906,
           "expected_points": 1.2442,
           "actual_position": null,
           "actual_dnf": null
@@ -6776,7 +6776,7 @@
           "p_podium": 0.0239,
           "p_points_finish": 0.1864,
           "p_dnf": 0.187,
-          "expected_position": 15.0774,
+          "expected_position": 15.0758,
           "expected_points": 1.1771,
           "actual_position": null,
           "actual_dnf": null
@@ -6789,7 +6789,7 @@
           "p_podium": 0.018,
           "p_points_finish": 0.1366,
           "p_dnf": 0.2097,
-          "expected_position": 16.1239,
+          "expected_position": 16.1196,
           "expected_points": 0.881,
           "actual_position": null,
           "actual_dnf": null
@@ -6802,7 +6802,7 @@
           "p_podium": 0.0173,
           "p_points_finish": 0.126,
           "p_dnf": 0.1875,
-          "expected_position": 16.2374,
+          "expected_position": 16.2399,
           "expected_points": 0.7977,
           "actual_position": null,
           "actual_dnf": null
@@ -6815,7 +6815,7 @@
           "p_podium": 0.023,
           "p_points_finish": 0.1762,
           "p_dnf": 0.1615,
-          "expected_position": 15.2046,
+          "expected_position": 15.2017,
           "expected_points": 1.077,
           "actual_position": null,
           "actual_dnf": null
@@ -6828,7 +6828,7 @@
           "p_podium": 0.0146,
           "p_points_finish": 0.1106,
           "p_dnf": 0.1892,
-          "expected_position": 16.5897,
+          "expected_position": 16.5858,
           "expected_points": 0.6644,
           "actual_position": null,
           "actual_dnf": null
@@ -6841,7 +6841,7 @@
           "p_podium": 0.0077,
           "p_points_finish": 0.0713,
           "p_dnf": 0.1845,
-          "expected_position": 17.5815,
+          "expected_position": 17.5802,
           "expected_points": 0.416,
           "actual_position": null,
           "actual_dnf": null
