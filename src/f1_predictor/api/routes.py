@@ -237,7 +237,13 @@ def _future_feature_frame(
 
     if tier == session_state.TIER_POST_QUALIFYING:
         quali_df = jolpica.fetch_qualifying(season, round_)
-        if not quali_df.empty:
+        if quali_df.empty:
+            # The tier is from the clock, but the grid is from published results,
+            # which lag the session by minutes to hours. Until they exist the frame
+            # is the pre-qualifying one, so it must not be labelled post_qualifying:
+            # that label put a pre-qualifying forecast under the post-qualifying tier.
+            tier = session_state.TIER_POST_PRACTICE
+        else:
             quali_feat = build_features.quali_features(quali_df)[["driver_id", "quali_position", "quali_gap_to_pole"]]
             future_df = future_df.drop(columns=["quali_position", "quali_gap_to_pole"]).merge(
                 quali_feat, on="driver_id", how="left"
