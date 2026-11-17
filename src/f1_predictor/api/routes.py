@@ -31,6 +31,7 @@ from ..features import session_state
 from ..models import championship_projection
 from ..models import dnf as dnf_model
 from ..models import explain as explain_lib
+from ..models import grid_layer
 from ..models import manifest as manifest_module
 from ..models import race_outcome
 from ..models import session_outcome
@@ -267,14 +268,16 @@ def _predict_upcoming_race(
     and it is the path whose output a reader is shown."""
     future_df, tier, coverage = _future_feature_frame(season, round_, race_row)
     candidate, ranker, dnf_clf = _load_models()
+    dnf_prob = dnf_model.predict_dnf_prob(dnf_clf, future_df, build_features.FEATURE_COLUMNS)
     if candidate == "xgb_ranker":
         scores = race_outcome.xgb_scores_for_race(ranker, future_df, build_features.FEATURE_COLUMNS)
-        theta = race_outcome.theta_from_xgb_scores(scores)
+        # The grid layer needs a real grid: post_qualifying only (tier was demoted above if it is missing).
+        layer = _require_manifest().get("grid_layer") if tier == session_state.TIER_POST_QUALIFYING else None
+        grid = future_df.set_index("driver_id")["grid"].to_dict()
+        sim = grid_layer.simulate(scores, grid, layer, dnf_prob, n_trials=10000)
     else:
         theta = race_outcome.theta_from_elo_strength(race_outcome.elo_strengths(future_df))
-
-    dnf_prob = dnf_model.predict_dnf_prob(dnf_clf, future_df, build_features.FEATURE_COLUMNS)
-    sim = race_outcome.simulate_race(theta, dnf_prob, n_trials=10000)
+        sim = race_outcome.simulate_race(theta, dnf_prob, n_trials=10000)
 
     constructor_lookup = future_df.set_index("driver_id")["constructor_id"]
     sim["constructor_id"] = sim["driver_id"].map(constructor_lookup)

@@ -141,5 +141,16 @@
     "sprint": {
       "n_training_rows": 612
     }
+  },
+  "grid_layer": {
+    "enabled": true,
+    "temperature": 0.6064242114232797,
+    "grid_coef": 1.4515371535992916,
+    "tier": "post_qualifying",
+    "fit_seasons": [
+      2020,
+      2026
+    ],
+    "fit_races": 151
   }
 }
