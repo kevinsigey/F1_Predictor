@@ -18,7 +18,7 @@ from ..evaluate import walk_forward
 from ..features import session_build, session_state
 from ..features.build import build_training_frame
 from . import dnf as dnf_model
-from . import race_outcome, session_outcome
+from . import grid_layer, race_outcome, session_outcome
 
 RACE_OUTCOME_MODEL_PATH = MODELS_DIR / "race_outcome_ranker.json"
 DNF_MODEL_PATH = MODELS_DIR / "dnf_model.json"
@@ -38,6 +38,13 @@ SESSION_MODEL_PATHS: dict[str, tuple] = {
 
 
 _MANIFEST_PARAM_KEYS = {"race_outcome_ranker": "tuned_ranker_params", "dnf_model": "tuned_dnf_params"}
+
+
+def _committed_manifest() -> dict | None:
+    try:
+        return json.loads(MANIFEST_PATH.read_text())
+    except (OSError, ValueError):
+        return None
 
 
 def _committed_tuned_params(study_name: str) -> dict | None:
@@ -111,6 +118,12 @@ def train_all(seasons: list[int] | None = None) -> dict:
     dnf_clf = dnf_model.train_dnf_model(post_quali, feature_cols, hyperparams=dnf_params)
     dnf_clf.save_model(str(DNF_MODEL_PATH))
 
+    # Refit the grid layer's two parameters on out-of-fold scores; `enabled` is a ship-rule
+    # decision (docs/f1_grid_layer.md) carried over from the committed manifest, never flipped here.
+    prev = (_committed_manifest() or {}).get("grid_layer") or {}
+    layer = grid_layer.fit_block(post_quali, feature_cols, ranker_params, enabled=prev.get("enabled", False))
+    print(f"Grid layer: {layer}")
+
     print("Training the 3 new session predictors (sprint_qualifying, qualifying, sprint)...")
     session_metrics: dict[str, dict] = {}
     for session_type, (model_path, dnf_path) in SESSION_MODEL_PATHS.items():
@@ -140,6 +153,7 @@ def train_all(seasons: list[int] | None = None) -> dict:
         "race_outcome_candidate": chosen,
         "tuned_ranker_params": ranker_params,
         "tuned_dnf_params": dnf_params,
+        "grid_layer": layer,
         "race_outcome_candidate_metrics": {
             "elo_last_fold_log_loss": elo_last,
             "xgb_ranker_last_fold_log_loss": xgb_last,
