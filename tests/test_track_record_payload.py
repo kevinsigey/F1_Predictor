@@ -108,3 +108,11 @@ def test_a_write_invalidates_the_cache():
     store.reconcile_session_predictions(_results(ROUNDS + 1), "race")
     after = store.get_session_track_record(session_type="race")["n_resolved"]
     assert after == before + 80, "a recorded session must show up on the next read, not from cache"
+
+
+def test_the_cache_is_bounded_however_many_distinct_filters_are_requested():
+    from f1_predictor.tracking import store
+
+    for i in range(store._TRACK_RECORD_CACHE_MAX + 20):
+        store.get_session_track_record(session_type=f"bogus-{i}")
+    assert len(store._TRACK_RECORD_CACHE) <= store._TRACK_RECORD_CACHE_MAX

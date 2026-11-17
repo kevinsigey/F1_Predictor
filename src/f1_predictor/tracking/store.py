@@ -483,11 +483,15 @@ def get_session_track_record(session_type: str | None = None, tier: str | None =
     if hit and hit[0] == version:
         return hit[1]
     value = _compute_session_track_record(session_type=session_type, tier=tier)
+    # Bounded: the key comes from request parameters, so an unbounded dict grows with every distinct value sent.
+    if key not in _TRACK_RECORD_CACHE and len(_TRACK_RECORD_CACHE) >= _TRACK_RECORD_CACHE_MAX:
+        _TRACK_RECORD_CACHE.pop(next(iter(_TRACK_RECORD_CACHE)))
     _TRACK_RECORD_CACHE[key] = (version, value)
     return value
 
 
 _TRACK_RECORD_CACHE: dict[tuple, tuple[tuple, dict]] = {}
+_TRACK_RECORD_CACHE_MAX = 32
 
 
 def _compute_session_track_record(session_type: str | None = None, tier: str | None = None) -> dict:
