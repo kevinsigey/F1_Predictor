@@ -330,6 +330,8 @@ export function SessionTimelinePanel({ season, round, isSprintWeekend, raceDatet
               list, no ledger request, and every driver's figures still present.
               NFL, PL and NBA are untouched and keep theirs — they have no
               equivalent table, so the list is their only showing of the numbers. */}
+          {/* The tower's numbers are the model's. F1 serves no market price for any driver market, so none is headlined. */}
+          <p data-testid="no-market-line" className="mb-2 text-xs text-pr-text-dim">Model probabilities · no market line</p>
           <TimingTower predictions={data.predictions} season={season} round={round} sessionType={selected} />
         </>
       )}
