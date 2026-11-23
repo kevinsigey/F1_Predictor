@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-11-09T18:59:41.328397+00:00",
+  "trained_at": "2026-11-23T20:29:55.206291+00:00",
   "seasons": [
     2019,
     2020,
@@ -12,7 +12,7 @@
   ],
   "last_race": {
     "season": 2026,
-    "round": 20
+    "round": 21
   },
   "feature_cols": [
     "elo_pre_race",
@@ -59,11 +59,22 @@
     "min_child_weight": 3,
     "reg_lambda": 0.015013182315032979
   },
+  "grid_layer": {
+    "enabled": true,
+    "temperature": 0.5547118731441731,
+    "grid_coef": 1.491666129588542,
+    "tier": "post_qualifying",
+    "fit_seasons": [
+      2020,
+      2026
+    ],
+    "fit_races": 152
+  },
   "race_outcome_candidate_metrics": {
-    "elo_last_fold_log_loss": 0.15181922328620404,
-    "xgb_ranker_last_fold_log_loss": 0.11026429973099965,
-    "elo_mean_log_loss": 0.13607511999144142,
-    "xgb_ranker_mean_log_loss": 0.13041259608997835
+    "elo_last_fold_log_loss": 0.14942583025386835,
+    "xgb_ranker_last_fold_log_loss": 0.10875009838771794,
+    "elo_mean_log_loss": 0.1355964413849743,
+    "xgb_ranker_mean_log_loss": 0.13010975582132203
   },
   "walk_forward_folds": {
     "elo": [
@@ -93,9 +104,9 @@
       },
       {
         "val_season": 2026,
-        "n_races": 20,
-        "log_loss": 0.15181922328620404,
-        "brier": 0.04198591060606061
+        "n_races": 21,
+        "log_loss": 0.14942583025386835,
+        "brier": 0.04140262674362674
       }
     ],
     "xgb_ranker": [
@@ -125,9 +136,9 @@
       },
       {
         "val_season": 2026,
-        "n_races": 20,
-        "log_loss": 0.11026429973099965,
-        "brier": 0.03152828535353535
+        "n_races": 21,
+        "log_loss": 0.10875009838771794,
+        "brier": 0.03109127176527177
       }
     ]
   },
@@ -136,21 +147,10 @@
       "n_training_rows": 612
     },
     "qualifying": {
-      "n_training_rows": 3470
+      "n_training_rows": 3492
     },
     "sprint": {
       "n_training_rows": 612
     }
-  },
-  "grid_layer": {
-    "enabled": true,
-    "temperature": 0.6064242114232797,
-    "grid_coef": 1.4515371535992916,
-    "tier": "post_qualifying",
-    "fit_seasons": [
-      2020,
-      2026
-    ],
-    "fit_races": 151
   }
 }
